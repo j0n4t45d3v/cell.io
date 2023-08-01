@@ -1,4 +1,4 @@
-function title(){
+function title() {
   const h1 = document.querySelector('h1');
   h1.style.display = 'flex';
   h1.style.justifyContent = 'center';
@@ -18,19 +18,27 @@ function setupCanvas(canvas) {
 }
 
 const canvas = document.getElementById('canvas');
-title()
+title();
 setupCanvas(canvas);
 
 const ctx = canvas.getContext('2d');
 
 let player = {
   size: 50,
-  positionX: 0,
-  positionY: 0,
+  positionX: 50 / 2,
+  positionY: 50 / 2,
+  getEnergy: () => {
+    console.log('pegou');
+    energy.positionX = Math.floor(Math.random() * 750);
+    energy.positionY = Math.floor(Math.random() * 550);
+
+    player.size += 10;
+    // }
+  },
 };
 
 let energy = {
-  size: 20,
+  size: 40,
   positionX: 100,
   positionY: 100,
 };
@@ -45,17 +53,30 @@ let keysPressed = {
 };
 
 function movePlayer() {
-  if (keysPressed.up && player.positionY != 0) {
+  if (keysPressed.up && player.positionY != player.size / 2) {
     player.positionY -= playerSpeed;
   }
-  if (keysPressed.down && player.positionY != canvas.height - player.size) {
+  if (keysPressed.down && player.positionY != canvas.height - player.size / 2) {
     player.positionY += playerSpeed;
   }
-  if (keysPressed.left && player.positionX != 0) {
+  if (keysPressed.left && player.positionX != player.size / 2) {
     player.positionX -= playerSpeed;
   }
-  if (keysPressed.right && player.positionX != canvas.width - player.size) {
+  if (keysPressed.right && player.positionX != canvas.width - player.size / 2) {
     player.positionX += playerSpeed;
+  }
+
+  const clicked =
+    keysPressed.up || keysPressed.left || keysPressed.right || keysPressed.down;
+
+  let potencePositionX = (player.positionX - energy.positionX) ** 2;
+  let potencePositionY = (player.positionY - energy.positionY) ** 2;
+
+
+  let distance = Math.sqrt(potencePositionX + potencePositionY);
+
+  if (clicked && distance == 0 || distance < player.size / 2 + energy.size / 2) {
+    player.getEnergy();
   }
 }
 
@@ -91,12 +112,22 @@ function keyDownHandler(event) {
 
 function drawPlayer(player) {
   ctx.fillStyle = 'white';
-  ctx.fillRect(player.positionX, player.positionY, player.size, player.size);
+  ctx.fillRect(
+    player.positionX - player.size / 2,
+    player.positionY - player.size / 2,
+    player.size,
+    player.size
+  );
 }
 
 function drawEnergy() {
   ctx.fillStyle = 'blue';
-  ctx.fillRect(energy.positionX, energy.positionY, energy.size, energy.size);
+  ctx.fillRect(
+    energy.positionX - energy.size / 2,
+    energy.positionY - energy.size / 2,
+    energy.size,
+    energy.size
+  );
 }
 
 addEventListener('keydown', keyDownHandler);
@@ -105,6 +136,7 @@ addEventListener('keyup', keyUpHandler);
 function run() {
   movePlayer();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawEnergy();
   drawPlayer(player);
   requestAnimationFrame(run);
 }
